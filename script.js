@@ -15,13 +15,17 @@ class Cell {
 
     draw() {
         // Draw a simple square
-        this.context.fillStyle = this.alive ? '#43a047' : '#303030';
-        this.context.fillRect(this.gridX * Cell.width, this.gridY * Cell.height, Cell.width, Cell.height);
+        this.context.fillStyle = this.alive ? "#43a047" : "#303030";
+        this.context.fillRect(
+            this.gridX * Cell.width,
+            this.gridY * Cell.height,
+            Cell.width,
+            Cell.height
+        );
     }
 }
 
 class GameWorld {
-
     static numColumns = 200;
     static numRows = 200;
 
@@ -29,43 +33,86 @@ class GameWorld {
         this.canvas = document.getElementById(canvasId);
         this.canvasLeft = canvas.offsetLeft + canvas.clientLeft;
         this.canvasTop = canvas.offsetTop + canvas.clientTop;
-        this.context = this.canvas.getContext('2d');
+        this.context = this.canvas.getContext("2d");
+        this.isDrawing = false;
         this.gameObjects = [];
         this.createGrid();
 
-        this.canvas.addEventListener('click', function(event) {
-            console.log("clicked!")
+        this.canvas.addEventListener(
+            "click",
+            function(event) {
+                console.log("clicked!");
 
-            var x = event.pageX - game.canvasLeft,
-                y = event.pageY - game.canvasTop;
+                var x = event.pageX - game.canvasLeft,
+                    y = event.pageY - game.canvasTop;
 
-            console.log("x = ", x)
-            console.log("y = ", y)
+                // console.log("x = ", x);
+                // console.log("y = ", y);
 
-            console.log("event.pageX = ", event.pageX)
-            console.log("event.pageY = ", event.pageY)
-            console.log("cells amount = ", game.gameObjects.length)
+                // console.log("event.pageX = ", event.pageX);
+                // console.log("event.pageY = ", event.pageY);
 
+                game.makeCellAliveIfCoordinatesMatches(y, x);
 
-            game.makeCellAliveIfCoordinatesMatches(y, x);
+                game.drawAllCells();
+            },
+            false
+        );
 
-            game.drawAllCells()
-        }, false);
+        this.canvas.addEventListener(
+            "mousedown",
+            function(event) {
+                game.isDrawing = true;
+            },
+            false
+        );
+
+        this.canvas.addEventListener(
+            "mouseup",
+            function(event) {
+                game.isDrawing = false;
+            },
+            false
+        );
+
+        this.canvas.addEventListener(
+            "mousemove",
+            function(event) {
+                if (game.isDrawing == true) {
+                    var x = event.pageX - game.canvasLeft,
+                        y = event.pageY - game.canvasTop;
+
+                    // console.log("x = ", x);
+                    // console.log("y = ", y);
+
+                    // console.log("event.pageX = ", event.pageX);
+                    // console.log("event.pageY = ", event.pageY);
+
+                    game.makeCellAliveIfCoordinatesMatches(y, x);
+
+                    game.drawAllCells();
+                }
+            },
+            false
+        );
 
         this.checkSurrounding();
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.drawAllCells()
+        this.drawAllCells();
     }
 
     makeCellAliveIfCoordinatesMatches(y, x) {
         for (let i = 0; i < game.gameObjects.length; i++) {
             let cell = game.gameObjects[i];
 
-            if (y > cell.top && y < cell.top + Cell.height &&
-                x > cell.left && x < cell.left + Cell.width) {
-
-                cell.alive = !cell.alive;
-                console.log('clicked an element');
+            if (
+                y > cell.top &&
+                y < cell.top + Cell.height &&
+                x > cell.left &&
+                x < cell.left + Cell.width
+            ) {
+                cell.alive = true;
+                console.log("clicked an element");
             }
         }
     }
@@ -87,16 +134,15 @@ class GameWorld {
     }
 
     gridToIndex(x, y) {
-        return x + (y * GameWorld.numColumns);
+        return x + y * GameWorld.numColumns;
     }
 
     checkSurrounding() {
-        // Loop over all cells
         for (let x = 0; x < GameWorld.numColumns; x++) {
             for (let y = 0; y < GameWorld.numRows; y++) {
-
                 // Count the nearby population
-                let numAlive = this.isAlive(x - 1, y - 1) +
+                let numAlive =
+                    this.isAlive(x - 1, y - 1) +
                     this.isAlive(x, y - 1) +
                     this.isAlive(x + 1, y - 1) +
                     this.isAlive(x - 1, y) +
@@ -109,7 +155,9 @@ class GameWorld {
 
                 if (numAlive == 2) {
                     // Do nothing
-                    this.gameObjects[centerIndex].nextAlive = this.gameObjects[centerIndex].alive;
+                    this.gameObjects[centerIndex].nextAlive = this.gameObjects[
+                        centerIndex
+                    ].alive;
                 } else if (numAlive == 3) {
                     // Make alive
                     this.gameObjects[centerIndex].nextAlive = true;
@@ -129,11 +177,11 @@ class GameWorld {
     gameLoop() {
         this.checkSurrounding();
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.drawAllCells()
+        this.drawAllCells();
 
         setTimeout(() => {
             window.requestAnimationFrame(() => this.gameLoop());
-        }, 30)
+        }, 30);
     }
 
     drawAllCells() {
@@ -149,5 +197,5 @@ function onStartClicked() {
 
 let game;
 window.onload = () => {
-    game = new GameWorld('canvas');
-}
+    game = new GameWorld("canvas");
+};
